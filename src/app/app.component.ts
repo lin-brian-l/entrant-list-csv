@@ -114,10 +114,14 @@ export class AppComponent implements OnInit {
             this.participants[participantIndex].participatedEvents[eventIndex].participated = true;
           })
         })
-        console.log(`after editing ${eventId}`)
+        console.log(`after editing ${eventId}`);
         console.dir(this.participants);
-        console.log(`after editing ${eventId}`)
+        console.log(`after editing ${eventId}`);
       })
+  }
+
+  downloadCSV() {
+    console.log("start download");
   }
 
 }
