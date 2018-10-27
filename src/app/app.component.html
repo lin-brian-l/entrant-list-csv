@@ -6,6 +6,8 @@
 
 <Button (click)="downloadCSV()">Get CSV</Button>
 
+<angular2csv *ngIf="csvData" [data]="csvData" filename="test" [options]="csvOptions"></angular2csv>
+
 <!-- <div style="text-align:center">
   <h1>
     Welcome to {{ title }}!
