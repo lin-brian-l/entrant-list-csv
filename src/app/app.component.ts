@@ -25,9 +25,8 @@ type Participant = {
 
 
 export class AppComponent implements OnInit {
-  tournamentUrl: string = "https://smash.gg/tournament/tripoint-smash-15/events";
-  // tourneyUrl: string;
-  tournamentName: string = "tripoint-smash-15";
+  tournamentUrl: string;
+  tournamentName: string;
   events: Event[];
   participatedEvents: ParticipatedEvent[];
   participants: Participant[];
@@ -38,34 +37,11 @@ export class AppComponent implements OnInit {
     showLabels: false,
     headers: ['Tag'],
     showTitle: true,
-    title: `Tournament Entrants from ${this.tournamentName}`,
+    // title: `Tournament Entrants from ${this.tournamentName}`,
     useBom: false,
     removeNewLines: true,
     keys: ['tag']
   }
-  testData: any[] = [
-    {
-      name: "Test, 1",
-      age: 13,
-      average: 8.2,
-      approved: true,
-      description: "using 'Content here, content here' "
-    },
-    {
-      name: 'Test 2',
-      age: 11,
-      average: 8.2,
-      approved: true,
-      description: "using 'Content here, content here' "
-    },
-    {
-      name: 'Test 3',
-      age: 10,
-      average: 8.2,
-      approved: true,
-      description: "using 'Content here, content here' "
-    }
-  ];
   csvData: any[];
 
   constructor(
@@ -73,8 +49,12 @@ export class AppComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    console.log("Component initiated");
-    this.getAllTournamentData();
+  }
+
+  submitUrl(): void {
+    this.tournamentName = this.tournamentUrl.match(/(?<=tournament\/)[^\/]*/)[0];
+    console.log(`tournamentName: ${this.tournamentName}`); 
+    console.log(`formatted tournamentName: ${this.formatTournamentName(this.tournamentName)}`); 
   }
 
   async getAllTournamentData() {
@@ -165,6 +145,7 @@ export class AppComponent implements OnInit {
       participant.participatedEvents.forEach((event: ParticipatedEvent) => {
         csvItem[event.name] = event.participated;
         if (participantIndex === 0) {
+          this.csvOptions.title = `Entrant Data for ${this.formatTournamentName(this.tournamentName)}`
           this.csvOptions.headers.push(event.name);
           this.csvOptions.keys.push(event.name);
         }
@@ -173,6 +154,14 @@ export class AppComponent implements OnInit {
     })
     console.log("vvvvvvvvvvvvvvvvvv csvData vvvvvvvvvvvvvvvvvvvvvv");
     console.dir(this.csvData);
+  }
+
+  formatTournamentName(name: string): string {
+    return name.toLowerCase()
+    .split('-')
+    .map((word: string) => {
+      return word.replace(word[0], word[0].toUpperCase());
+    }).join(' ');
   }
 
 }
