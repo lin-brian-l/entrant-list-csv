@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
+import { NgxSpinnerService } from "ngx-spinner";
 
 type Event = {
   id: number;
@@ -37,7 +38,6 @@ export class AppComponent implements OnInit {
     showLabels: false,
     headers: ['Tag'],
     showTitle: true,
-    // title: `Tournament Entrants from ${this.tournamentName}`,
     useBom: false,
     removeNewLines: true,
     keys: ['tag']
@@ -45,23 +45,23 @@ export class AppComponent implements OnInit {
   csvData: any[];
 
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private spinnerService: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
   }
 
   submitUrl(): void {
+    this.spinnerService.show();
     this.tournamentName = this.tournamentUrl.match(/(?<=tournament\/)[^\/]*/)[0];
-    console.log(`tournamentName: ${this.tournamentName}`); 
-    console.log(`formatted tournamentName: ${this.formatTournamentName(this.tournamentName)}`); 
+    this.getAllTournamentData();
   }
 
   async getAllTournamentData() {
     console.log("inside getAllTournamentData()");
     await this.getParticipantsAndEvents();
     this.getAllEventsData();
-    // setTimeout(this.getAllEventsData.bind(this), 5000);
   }
 
   getParticipantsAndEvents() {
@@ -81,11 +81,7 @@ export class AppComponent implements OnInit {
           participated: false,
         }
       });
-      // const participatedEvents: ParticipatedEvent[] = this.participatedEvents.slice(0);
-      console.dir(this.participatedEvents);
-      console.log("^^^^^^^^^^^ this.participatedevents");
       this.participants = data.entities.participants.map((participant: any) => {
-      // console.dir(participatedEvents);
         let participatedEvents = this.events.map((event: Event) => {
           return {
             name: event.name,
@@ -96,18 +92,12 @@ export class AppComponent implements OnInit {
           id: participant.id,
           tag: participant.gamerTag,
           participatedEvents
-          // participatedEvents: Array.from(this.participatedEvents)
         }
       })
-      console.dir(this.participants);
     })
   }
 
   async getAllEventsData() {
-    // console.log("********* participants before edits ***********")
-    // console.dir(this.participants);
-    // console.log("********* participants before edits ***********")
-    // this.getEventData(this.events[2].id);
     let eventPromises = [];
     this.events.forEach((event: Event) => {
       eventPromises.push(this.getEventData(event.id));
@@ -117,7 +107,6 @@ export class AppComponent implements OnInit {
   }
 
   async getEventData(eventId: number) {
-    console.log("inside event data: " + eventId);
     const eventUrl: string = `https://cors-anywhere.herokuapp.com/https://api.smash.gg/event/${eventId}?expand[]=entrants`;
     await this.http.get(eventUrl)
     .toPromise()
@@ -133,9 +122,6 @@ export class AppComponent implements OnInit {
           this.participants[participantIndex].participatedEvents[eventIndex].participated = true;
         })
       })
-      console.log(`after editing ${eventId}`);
-      console.dir(this.participants);
-      console.log(`after editing ${eventId}`);
     })
   }
 
@@ -144,16 +130,17 @@ export class AppComponent implements OnInit {
       let csvItem = { tag: participant.tag };
       participant.participatedEvents.forEach((event: ParticipatedEvent) => {
         csvItem[event.name] = event.participated;
-        if (participantIndex === 0) {
-          this.csvOptions.title = `Entrant Data for ${this.formatTournamentName(this.tournamentName)}`
-          this.csvOptions.headers.push(event.name);
-          this.csvOptions.keys.push(event.name);
-        }
+        if (participantIndex === 0) this.editCSVOptions(event);
       })
       return csvItem;
     })
-    console.log("vvvvvvvvvvvvvvvvvv csvData vvvvvvvvvvvvvvvvvvvvvv");
-    console.dir(this.csvData);
+    this.spinnerService.hide();
+  }
+
+  editCSVOptions(event: ParticipatedEvent) {
+    this.csvOptions.title = `Entrant Data for ${this.formatTournamentName(this.tournamentName)}`
+    this.csvOptions.headers.push(event.name);
+    this.csvOptions.keys.push(event.name);
   }
 
   formatTournamentName(name: string): string {

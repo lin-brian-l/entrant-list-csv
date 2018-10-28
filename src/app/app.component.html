@@ -1,4 +1,4 @@
-<!--The content below is only a placeholder and can be replaced.-->
+<ngx-spinner></ngx-spinner>
 <div class="header">
 	<h1>Smash.gg Entrant-List CSV Generator</h1>
 	<span>This code is hosted on my Github, <a href="https://github.com/lin-brian-l/admin-team-entrants">lin-brian-l</a>. Enjoy!</span>
@@ -12,6 +12,5 @@
 	<input class="form__input" [(ngModel)]="tournamentUrl" placeholder="ex: https://smash.gg/tripoint-smash-15">
 	<button class="form__submit-button" (click)="submitUrl()">Generate CSV</button>
 </div>
-
 
 <angular2csv *ngIf="csvData" [data]="csvData" filename="test" [options]="csvOptions"></angular2csv>
