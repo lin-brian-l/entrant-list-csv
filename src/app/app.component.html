@@ -6,11 +6,12 @@
 <div class="form">
 	<ol class="form__instructions">
 		<li>Paste the URL of any Smash.gg tournament you want data for.</li>
-		<li>Hit "Generate CSV" to start the process.</li>
-		<li>Hit "Download CSV" to get the data.</li>
-	</ol>
-	<input class="form__input" [(ngModel)]="tournamentUrl" placeholder="ex: https://smash.gg/tripoint-smash-15">
-	<button class="form__submit-button" (click)="submitUrl()">Generate CSV</button>
+		<li>Hit "Create" to start the process.</li>
+		<li>Hit "download" to get the data.</li>
+  </ol>
+  <div>
+    <input class="form__input" [(ngModel)]="tournamentUrl" placeholder="ex: https://smash.gg/tripoint-smash-15">
+    <button class="form__submit-button" (click)="submitUrl()">Create</button>
+  </div>
+  <angular2csv *ngIf="csvData" [data]="csvData" filename="{{tournamentName}}-entrants" [options]="csvOptions"></angular2csv>
 </div>
-
-<angular2csv *ngIf="csvData" [data]="csvData" filename="{{tournamentName}}-entrants" [options]="csvOptions"></angular2csv>

@@ -24,7 +24,6 @@ type Participant = {
   styleUrls: ['./app.component.css']
 })
 
-
 export class AppComponent {
   tournamentUrl: string;
   tournamentName: string;
@@ -36,11 +35,11 @@ export class AppComponent {
     quoteStrings: '"',
     decimalseparator: '.',
     showLabels: false,
-    headers: ['Tag'],
+    // headers: ['Tag'],
     showTitle: true,
     useBom: false,
     removeNewLines: true,
-    keys: ['tag']
+    // keys: ['tag']
   }
   csvData: any[];
 
@@ -50,15 +49,29 @@ export class AppComponent {
   ) { }
 
   async submitUrl() {
-    this.spinnerService.show();
-    this.tournamentName = this.tournamentUrl.match(/(?<=tournament\/)[^\/]*/)[0];
-    await this.getAllTournamentData();
-    this.createCSVData();
+    console.log("before checking valid url");
+    this.tournamentName = this.tournamentUrl ? this.tournamentUrl.match(/(?<=tournament\/)[^\/]*/)[0] : undefined;
+    if (this.tournamentName) {
+      this.spinnerService.show();
+      try {
+        await this.getAllTournamentData();
+        this.createCSVData();
+      } catch (error) {
+        alert('An error has occurred. Please double-check your Smash.gg url.');
+      }
+      this.spinnerService.hide();
+    } else {
+      alert("Enter a valid Smash.gg tournament url.");
+    }
   }
 
   async getAllTournamentData() {
-    await this.getParticipantsAndEvents();
-    await this.getAllEventsData();
+    try {
+      await this.getParticipantsAndEvents();
+      await this.getAllEventsData();
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   getParticipantsAndEvents() {
@@ -90,7 +103,11 @@ export class AppComponent {
     this.events.forEach((event: Event) => {
       eventPromises.push(this.getEventData(event.id));
     })
-    await Promise.all(eventPromises);
+    try {
+      await Promise.all(eventPromises);
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   async getEventData(eventId: number) {
@@ -115,13 +132,16 @@ export class AppComponent {
   createCSVData(): void { 
     this.csvData = this.participants.map((participant: Participant, participantIndex: number) => {
       let csvItem = { tag: participant.tag };
+      if (participantIndex === 0) {
+        this.csvOptions.headers = ["Tag"];
+        this.csvOptions.keys = ['tag'];
+      }
       participant.participatedEvents.forEach((event: ParticipatedEvent) => {
         csvItem[event.name] = event.participated ? "Y" : "";
         if (participantIndex === 0) this.editCSVOptions(event);
       })
       return csvItem;
     })
-    this.spinnerService.hide();
   }
 
   editCSVOptions(event: ParticipatedEvent) {
