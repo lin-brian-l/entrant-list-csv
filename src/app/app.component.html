@@ -13,4 +13,4 @@
 	<button class="form__submit-button" (click)="submitUrl()">Generate CSV</button>
 </div>
 
-<angular2csv *ngIf="csvData" [data]="csvData" filename="test" [options]="csvOptions"></angular2csv>
+<angular2csv *ngIf="csvData" [data]="csvData" filename="{{tournamentName}}-entrants" [options]="csvOptions"></angular2csv>

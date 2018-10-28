@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { NgxSpinnerService } from "ngx-spinner";
 
@@ -25,7 +25,7 @@ type Participant = {
 })
 
 
-export class AppComponent implements OnInit {
+export class AppComponent {
   tournamentUrl: string;
   tournamentName: string;
   events: Event[];
@@ -49,19 +49,16 @@ export class AppComponent implements OnInit {
     private spinnerService: NgxSpinnerService
   ) { }
 
-  ngOnInit(): void {
-  }
-
-  submitUrl(): void {
+  async submitUrl() {
     this.spinnerService.show();
     this.tournamentName = this.tournamentUrl.match(/(?<=tournament\/)[^\/]*/)[0];
-    this.getAllTournamentData();
+    await this.getAllTournamentData();
+    this.createCSVData();
   }
 
   async getAllTournamentData() {
-    console.log("inside getAllTournamentData()");
     await this.getParticipantsAndEvents();
-    this.getAllEventsData();
+    await this.getAllEventsData();
   }
 
   getParticipantsAndEvents() {
@@ -70,24 +67,15 @@ export class AppComponent implements OnInit {
     .toPromise()
     .then((data: any) => {
       this.events = data.entities.event.map((event: any) => {
-        return {
-          id: event.id,
-          name: event.name
-        }
+        return { id: event.id, name: event.name }
       });
       this.participatedEvents = this.events.map((event: Event) => {
-        return {
-          name: event.name,
-          participated: false,
-        }
+        return { name: event.name, participated: false };
       });
       this.participants = data.entities.participants.map((participant: any) => {
         let participatedEvents = this.events.map((event: Event) => {
-          return {
-            name: event.name,
-            participated: false,
-          }
-        });        
+          return { name: event.name, participated: false };
+        });
         return {
           id: participant.id,
           tag: participant.gamerTag,
@@ -103,7 +91,6 @@ export class AppComponent implements OnInit {
       eventPromises.push(this.getEventData(event.id));
     })
     await Promise.all(eventPromises);
-    this.createCSVData();
   }
 
   async getEventData(eventId: number) {
@@ -129,7 +116,7 @@ export class AppComponent implements OnInit {
     this.csvData = this.participants.map((participant: Participant, participantIndex: number) => {
       let csvItem = { tag: participant.tag };
       participant.participatedEvents.forEach((event: ParticipatedEvent) => {
-        csvItem[event.name] = event.participated;
+        csvItem[event.name] = event.participated ? "Y" : "";
         if (participantIndex === 0) this.editCSVOptions(event);
       })
       return csvItem;
